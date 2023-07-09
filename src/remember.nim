@@ -1,4 +1,4 @@
-import std/os
+from std/os import paramCount, paramStr
 
 from history import nil
 from save import nil

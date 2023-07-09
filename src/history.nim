@@ -1,8 +1,10 @@
 from std/os import createDir, joinPath, pcFile, walkDir
+from std/algorithm import sorted, SortOrder
 
 import std/strformat
 import std/terminal
-from common import getFileNames, getSavePath
+
+from common import getFileNames, getSavePath, sortStringsByNumber
 
 var
     files: seq[string] = @[]
@@ -19,7 +21,8 @@ proc printFileContent(folderPath: string, fileName: string) =
 proc refreshSnippets(folderPath: string) =
     createDir(folderPath)
 
-    files = getFileNames(folderPath)
+    files = sorted(getFileNames(folderPath), sortStringsByNumber,
+            SortOrder.Ascending)
 
     if files.len() == 0:
         echo "History is empty; nothing to show."
@@ -50,10 +53,10 @@ proc command*() =
         printFileContent(folderPath, files[fileIndex])
 
         let notFirstPage = fileIndex > 0
-        var previousText = (if notFirstPage: "; 'b' to go to back" else: "")
+        let previousText = (if notFirstPage: "; 'b' to go to back" else: "")
 
         let notLastPage = fileIndex + 1 < files.len()
-        var nextText = (if notLastPage: "; 'n' to go to next" else: "")
+        let nextText = (if notLastPage: "; 'n' to go to next" else: "")
 
         stdout.styledWriteLine(fgYellow,
                 &"\nViewing snippet {fileIndex + 1} of {files.len()}; 'q' to quit{nextText}{previousText}; 'r' to refresh: ")
