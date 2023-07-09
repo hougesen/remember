@@ -4,6 +4,9 @@ import std/strformat
 import std/terminal
 from common import getFileNames, getSavePath
 
+var
+    files: seq[string] = @[]
+
 
 proc printFileContent(folderPath: string, fileName: string) =
     let f = open(joinPath(folderPath, fileName), fmRead)
@@ -13,12 +16,20 @@ proc printFileContent(folderPath: string, fileName: string) =
     stdout.write(f.readAll())
 
 
+proc refreshSnippets(folderPath: string) =
+    createDir(folderPath)
+
+    files = getFileNames(folderPath)
+
+    if files.len() == 0:
+        echo "History is empty; nothing to show."
+        quit(0)
+
+
 proc command*() =
     let folderPath = getSavePath()
 
-    createDir(folderPath)
-
-    let files = getFileNames(folderPath)
+    refreshSnippets(folderPath)
 
     if files.len() == 0:
         echo "History is empty; nothing to show."
@@ -28,7 +39,6 @@ proc command*() =
         terminal.enableTrueColors()
 
     terminal.eraseScreen()
-
 
     var fileIndex = 0
 
@@ -46,23 +56,28 @@ proc command*() =
         var nextText = (if notLastPage: "; 'n' to go to next" else: "")
 
         stdout.styledWriteLine(fgYellow,
-                &"\nViewing snippet {fileIndex + 1} of {files.len()}; 'q' to quit{nextText}{previousText}: ")
+                &"\nViewing snippet {fileIndex + 1} of {files.len()}; 'q' to quit{nextText}{previousText}; 'r' to refresh: ")
 
         while true:
-
             let k = getch()
 
-            case k
-                of 'q':
-                    stdout.write("\n")
-                    quit(0)
-                of 'n':
-                    if notLastPage:
-                        fileIndex += 1
-                of 'b':
-                    if notFirstPage:
-                        fileIndex -= 1
-                else:
-                    break
+            if k == 'q':
+                stdout.write("\n")
+                quit(0)
+
+            elif k == 'n':
+                if notLastPage:
+                    fileIndex += 1
+
+            elif k == 'b':
+                if notFirstPage:
+                    fileIndex -= 1
+
+            elif k == 'r':
+                refreshSnippets(folderPath)
+
+                if files.len() - 1 < fileIndex:
+                    fileIndex = files.len() - 1
+
             break
 
