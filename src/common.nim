@@ -12,11 +12,11 @@ proc getFileNames*(folderPath: string): seq[string] =
     return files
 
 
-proc getSavePath*(): string =
+func getSavePath*(): string =
     return joinPath(getHomeDir(), ".remember")
 
 
-proc sortStringsByNumber*(a: string, b: string): int =
+func sortStringsByNumber*(a: string, b: string): int =
     let aInt: int64 = parseInt(a)
     let bInt: int64 = parseInt(b)
 

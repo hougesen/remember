@@ -21,11 +21,11 @@ proc readSnippet(folderPath: string, fileName: string): string =
     return f.readAll()
 
 
-proc printFileContent(content: string) =
+proc printContent(content: string): void =
     stdout.write(content)
 
 
-proc refreshSnippets(folderPath: string) =
+proc refreshSnippets(folderPath: string): void =
     createDir(folderPath)
 
     files = sorted(getFileNames(folderPath), sortStringsByNumber,
@@ -36,11 +36,11 @@ proc refreshSnippets(folderPath: string) =
         quit(0)
 
 
-proc copySnippet(cb: ptr clipboard_c, snippet: string) =
-    discard cb.clipboard_set_text(snippet)
+proc copyText(cb: ptr clipboard_c, text: string): bool =
+    return cb.clipboard_set_text(text)
 
 
-proc command*() =
+proc command*(): void =
     let folderPath = getSavePath()
 
     refreshSnippets(folderPath)
@@ -63,7 +63,7 @@ proc command*() =
         terminal.eraseScreen(stdout)
 
         let content = readSnippet(folderPath, files[fileIndex])
-        printFileContent(content)
+        printContent(content)
 
         let notFirstPage = fileIndex > 0
         let previousText = (if notFirstPage: "; 'b' to go to back" else: "")
@@ -96,7 +96,7 @@ proc command*() =
                     fileIndex = files.len() - 1
 
             elif k == 'c':
-                copySnippet(cb, content)
+                discard copyText(cb, content)
 
             break
 

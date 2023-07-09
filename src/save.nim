@@ -6,7 +6,7 @@ from common import getSavePath
 import nimclipboard/libclipboard
 
 
-proc command*() =
+proc command*(): void =
     let content = clipboard_new(nil).clipboard_text()
 
     if content.len() == 0:
