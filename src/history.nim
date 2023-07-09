@@ -4,18 +4,25 @@ from std/algorithm import sorted, SortOrder
 import std/strformat
 import std/terminal
 
+import nimclipboard/libclipboard
+
 from common import getFileNames, getSavePath, sortStringsByNumber
+
 
 var
     files: seq[string] = @[]
 
 
-proc printFileContent(folderPath: string, fileName: string) =
+proc readSnippet(folderPath: string, fileName: string): string =
     let f = open(joinPath(folderPath, fileName), fmRead)
 
     defer: f.close()
 
-    stdout.write(f.readAll())
+    return f.readAll()
+
+
+proc printFileContent(content: string) =
+    stdout.write(content)
 
 
 proc refreshSnippets(folderPath: string) =
@@ -27,6 +34,10 @@ proc refreshSnippets(folderPath: string) =
     if files.len() == 0:
         echo "History is empty; nothing to show."
         quit(0)
+
+
+proc copySnippet(cb: ptr clipboard_c, snippet: string) =
+    discard cb.clipboard_set_text(snippet)
 
 
 proc command*() =
@@ -45,12 +56,14 @@ proc command*() =
 
     var fileIndex = 0
 
+    var cb = clipboard_new(nil)
+
     while true:
         stdout.write("\n")
-
         terminal.eraseScreen(stdout)
 
-        printFileContent(folderPath, files[fileIndex])
+        let content = readSnippet(folderPath, files[fileIndex])
+        printFileContent(content)
 
         let notFirstPage = fileIndex > 0
         let previousText = (if notFirstPage: "; 'b' to go to back" else: "")
@@ -59,7 +72,7 @@ proc command*() =
         let nextText = (if notLastPage: "; 'n' to go to next" else: "")
 
         stdout.styledWriteLine(fgYellow,
-                &"\nViewing snippet {fileIndex + 1} of {files.len()}; 'q' to quit{nextText}{previousText}; 'r' to refresh: ")
+                &"\nViewing {fileIndex + 1} of {files.len()}; 'q' to quit; 'c' to copy; 'r' to refresh{nextText}{previousText}: ")
 
         while true:
             let k = getch()
@@ -81,6 +94,9 @@ proc command*() =
 
                 if files.len() - 1 < fileIndex:
                     fileIndex = files.len() - 1
+
+            elif k == 'c':
+                copySnippet(cb, content)
 
             break
 
