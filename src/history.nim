@@ -6,7 +6,7 @@ import std/terminal
 
 import nimclipboard/libclipboard
 
-from common import getFileNames, getSavePath, sortStringsByNumber
+from common import clearScreen, getFileNames, getSavePath, sortStringsByNumber
 
 
 var
@@ -59,8 +59,7 @@ proc command*(): void =
     var cb = clipboard_new(nil)
 
     while true:
-        stdout.write("\n")
-        terminal.eraseScreen(stdout)
+        clearScreen()
 
         let content = readSnippet(folderPath, files[fileIndex])
         printContent(content)
@@ -84,19 +83,20 @@ proc command*(): void =
             elif k == 'n':
                 if notLastPage:
                     fileIndex += 1
+                    break
 
             elif k == 'b':
                 if notFirstPage:
                     fileIndex -= 1
+                    break
 
             elif k == 'r':
                 refreshSnippets(folderPath)
 
                 if files.len() - 1 < fileIndex:
                     fileIndex = files.len() - 1
+                break
 
             elif k == 'c':
                 discard copyText(cb, content)
-
-            break
 

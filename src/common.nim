@@ -1,6 +1,6 @@
 from std/os import pcFile, walkDir, getHomeDir, joinPath
 from std/strutils import parseInt
-
+from std/terminal import eraseScreen
 
 proc getFileNames*(folderPath: string): seq[string] =
     var files: seq[string] = @[]
@@ -24,3 +24,13 @@ func sortStringsByNumber*(a: string, b: string): int =
         return 1
 
     return -1
+
+
+proc clearScreen*(): void =
+    try:
+        discard os.execShellCmd("clear")
+    except:
+        discard
+
+    terminal.eraseScreen(stdout)
+
